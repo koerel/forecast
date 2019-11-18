@@ -74,7 +74,6 @@ forecast.projects().then(projects => {
     projectList[project.id] = project.name
   })
   forecast.assignments(options).then(assignments => {
-    console.log(assignments)
     const myTasks = assignments.filter(a => a.person_id.toString() === me.toString())
     myTasks.forEach(task => {
       const taskStart = DateTime.fromISO(task.start_date)
