@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "install": "mkdir -p ~/.config/forecast  && cp .config.json ~/.config/forecast/config.json && echo 'Please set you credentials in ~/.config/forecast/config.json'"
   },
-  "bin": "./index.js",
+  "bin": {
+    "forecast": "index.js"
+  },
   "author": "Karel Eeckelaert",
   "license": "MIT",
   "dependencies": {
