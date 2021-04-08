@@ -1,15 +1,13 @@
 #!/usr/bin/env node
-const os = require('os')
-const config = require(os.homedir + '/.config/forecast/config.json')
 const Forecast = require('forecast-promise')
 const { DateTime } = require('luxon')
 const forecast = new Forecast({
-  accountId: config.id,
-  token: config.token
+  accountId: process.env.FORECAST_ACCOUNT_ID,
+  token: process.env.FORECAST_API_TOKEN
 })
 const { table } = require('table')
 const projectList = {}
-const me = config.user_id
+const me = process.env.FORECAST_ACCOUNT_ID
 const dt = DateTime.local()
 const start = dt.startOf('week')
 const end = dt.endOf('week')
@@ -68,24 +66,26 @@ const data = [
     colorize('Total', 'FgRed')
   ]
 ]
-
-forecast.projects().then(projects => {
-  projects.forEach(project => {
-    projectList[project.id] = project.name
-  })
-  forecast.assignments(options).then(assignments => {
-    const myTasks = assignments.filter(a => a.person_id.toString() === me.toString())
-    myTasks.forEach(task => {
-      const taskStart = DateTime.fromISO(task.start_date)
-      const taskEnd = DateTime.fromISO(task.end_date)
-      const monday = days.monday >= taskStart && days.monday <= taskEnd ? task.allocation / 3600 : 0
-      const thuesday = days.thuesday >= taskStart && days.thuesday <= taskEnd ? task.allocation / 3600 : 0
-      const wednesday = days.wednesday >= taskStart && days.wednesday <= taskEnd ? task.allocation / 3600 : 0
-      const thursday = days.thursday >= taskStart && days.thursday <= taskEnd ? task.allocation / 3600 : 0
-      const friday = days.friday >= taskStart && days.friday <= taskEnd ? task.allocation / 3600 : 0
-      const total = monday + thuesday + wednesday + thursday + friday
-      data.push([colorize(projectList[task.project_id], 'FgYellow'), monday, thuesday, wednesday, thursday, friday, total])
+forecast.whoAmI().then(me => {
+  forecast.projects().then(projects => {
+    projects.forEach(project => {
+      projectList[project.id] = project.name
     })
-    console.log(table(data))
+    forecast.assignments(options).then(assignments => {
+      const myTasks = assignments.filter(a => a.person_id.toString() === me.id.toString())
+      myTasks.forEach(task => {
+        const taskStart = DateTime.fromISO(task.start_date)
+        const taskEnd = DateTime.fromISO(task.end_date)
+        const monday = days.monday >= taskStart && days.monday <= taskEnd ? task.allocation / 3600 : 0
+        const thuesday = days.thuesday >= taskStart && days.thuesday <= taskEnd ? task.allocation / 3600 : 0
+        const wednesday = days.wednesday >= taskStart && days.wednesday <= taskEnd ? task.allocation / 3600 : 0
+        const thursday = days.thursday >= taskStart && days.thursday <= taskEnd ? task.allocation / 3600 : 0
+        const friday = days.friday >= taskStart && days.friday <= taskEnd ? task.allocation / 3600 : 0
+        const total = monday + thuesday + wednesday + thursday + friday
+        data.push([colorize(projectList[task.project_id], 'FgYellow'), monday, thuesday, wednesday, thursday, friday, total])
+      })
+      console.log(table(data))
+    })
   })
 })
+
